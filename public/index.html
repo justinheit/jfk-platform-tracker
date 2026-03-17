@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JFK Platform — Project Tracker</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --yellow: #ca8a04;
+    --yellow-bg: #fef9c3;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --blue: #2563eb;
+    --blue-bg: #dbeafe;
+    --gray: #64748b;
+    --gray-bg: #f1f5f9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+  .header { background: linear-gradient(135deg, #1e3a5f, #2563eb); color: white; padding: 2rem; text-align: center; }
+  .header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .header p { opacity: 0.85; font-size: 1rem; }
+  .controls { max-width: 1400px; margin: 1.5rem auto; padding: 0 1rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+  .search-box { flex: 1; min-width: 220px; padding: 0.6rem 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .search-box:focus { border-color: var(--primary); }
+  .filter-btn { padding: 0.5rem 1rem; border: 2px solid var(--border); border-radius: 8px; background: var(--card-bg); cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s; white-space: nowrap; }
+  .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .stats { max-width: 1400px; margin: 0 auto 1rem; padding: 0 1rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  .stat-card { flex: 1; min-width: 140px; background: var(--card-bg); border-radius: 10px; padding: 1rem 1.25rem; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .stat-card .label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; }
+  .stat-card .value { font-size: 1.75rem; font-weight: 700; margin-top: 0.25rem; }
+  .table-wrap { max-width: 1400px; margin: 0 auto; padding: 0 1rem 3rem; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  thead { background: #f1f5f9; }
+  th { text-align: left; padding: 0.75rem 1rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; cursor: pointer; user-select: none; white-space: nowrap; position: relative; }
+  th:hover { color: var(--primary); }
+  th .sort-icon { margin-left: 4px; font-size: 0.7rem; }
+  td { padding: 0.65rem 1rem; border-top: 1px solid var(--border); font-size: 0.9rem; vertical-align: top; }
+  tr:hover td { background: #f8fafc; }
+  .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
+  .badge-category { background: var(--blue-bg); color: var(--blue); }
+  .badge-high { background: var(--red-bg); color: var(--red); }
+  .badge-medium { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-low { background: var(--green-bg); color: var(--green); }
+  .status-select, .priority-select, .assignee-input, .effort-select, .notes-input { border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.85rem; background: white; width: 100%; outline: none; }
+  .status-select:focus, .priority-select:focus, .assignee-input:focus, .effort-select:focus, .notes-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
+  .export-bar { max-width: 1400px; margin: 0 auto; padding: 0 1rem; display: flex; gap: 0.5rem; justify-content: flex-end; margin-bottom: 1rem; }
+  .export-btn { padding: 0.5rem 1.25rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: background 0.2s; }
+  .export-btn:hover { background: #1d4ed8; }
+  .export-btn.secondary { background: #475569; }
+  .export-btn.secondary:hover { background: #334155; }
+  .category-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+  @media (max-width: 768px) { .controls { flex-direction: column; } .search-box { width: 100%; } td, th { padding: 0.5rem 0.6rem; font-size: 0.8rem; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>JFK Platform — Project Tracker</h1>
+  <p>Software Development Roadmap &amp; Task Management</p>
+</div>
+<div class="stats" id="stats"></div>
+<div class="controls">
+  <input type="text" class="search-box" id="search" placeholder="Search tasks, categories, notes...">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="Payments/Billing">Payments/Billing</button>
+  <button class="filter-btn" data-filter="Netsuite Integration">Netsuite</button>
+  <button class="filter-btn" data-filter="Events">Events</button>
+  <button class="filter-btn" data-filter="P&L">P&amp;L</button>
+  <button class="filter-btn" data-filter="Email/Text Platform">Email/Text</button>
+  <button class="filter-btn" data-filter="Classes">Classes</button>
+  <button class="filter-btn" data-filter="Director Training">Director Training</button>
+  <button class="filter-btn" data-filter="Marketing">Marketing</button>
+  <button class="filter-btn" data-filter="Accounting">Accounting</button>
+</div>
+<div class="export-bar">
+  <button class="export-btn secondary" onclick="exportCSV()">Export CSV</button>
+  <button class="export-btn" onclick="printView()">Print View</button>
+</div>
+<div class="table-wrap">
+  <table id="projectTable">
+    <thead><tr>
+      <th data-sort="id"># <span class="sort-icon"></span></th>
+      <th data-sort="category">Category <span class="sort-icon"></span></th>
+      <th data-sort="task">Task / Feature <span class="sort-icon"></span></th>
+      <th data-sort="priority">Priority <span class="sort-icon"></span></th>
+      <th data-sort="status">Status <span class="sort-icon"></span></th>
+      <th data-sort="assignee">Assigned To <span class="sort-icon"></span></th>
+      <th data-sort="effort">Effort <span class="sort-icon"></span></th>
+      <th>Notes</th>
+    </tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+<script>
+const CATEGORY_COLORS={"Payments/Billing":"#2563eb","Netsuite Integration":"#7c3aed","Events":"#059669","P&L":"#dc2626","Email/Text Platform":"#ea580c","Classes":"#0891b2","Director Training":"#4f46e5","Marketing":"#d946ef","Accounting":"#ca8a04"};
+let projects=[{id:1,category:"Payments/Billing",task:"Auth.net Integration",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Payment gateway setup"},{id:2,category:"Payments/Billing",task:"Recurring Monthly Payments",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Automated monthly billing"},{id:3,category:"Payments/Billing",task:"Camps - Events Payments",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Payment processing for camps & events"},{id:4,category:"Payments/Billing",task:"Auto Collection CMI",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Automated collection system"},{id:5,category:"Payments/Billing",task:"Auto Billing Systems",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Automated billing infrastructure"},{id:6,category:"Payments/Billing",task:"Registration Fees / Siblings",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Sibling discount handling for registration"},{id:7,category:"Payments/Billing",task:"Payment Plan - Bowl Game",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Installment plans for bowl game fees"},{id:8,category:"Payments/Billing",task:"Costumes Billing",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Costume fee management"},{id:9,category:"Payments/Billing",task:"Late Fees",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Late payment fee automation"},{id:10,category:"Director Training",task:"Choreography Resources",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Choreography training materials"},{id:11,category:"Director Training",task:"Training Modules",priority:"Medium",status:"Not Started",assignee:"",effort:"Large",notes:"Director training curriculum"},{id:12,category:"Director Training",task:"Music Library",priority:"Low",status:"Not Started",assignee:"",effort:"Medium",notes:"Music resource management"},{id:13,category:"Director Training",task:"Forms",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Training-related forms"},{id:14,category:"Director Training",task:"Resource Library",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Central training resource repository"},{id:15,category:"Netsuite Integration",task:"Products / Kits",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Product & kit sync with Netsuite"},{id:16,category:"Netsuite Integration",task:"Imports - Uniforms",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Uniform data import"},{id:17,category:"Netsuite Integration",task:"Imports - Parade",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Parade item data import"},{id:18,category:"Netsuite Integration",task:"Imports - Shoes",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Shoe inventory import"},{id:19,category:"Netsuite Integration",task:"Imports - Bowl Game",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Bowl game merchandise import"},{id:20,category:"Netsuite Integration",task:"Imports - Costumewear",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Costumewear data import"},{id:21,category:"Netsuite Integration",task:"Tax Reporting",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Tax reporting integration"},{id:22,category:"Netsuite Integration",task:"Director Merchandise Sales",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Director merch sales tracking"},{id:23,category:"Events",task:"Two (Event Type)",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Two-day event management"},{id:24,category:"Events",task:"SOS Events",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"SOS event type support"},{id:25,category:"Events",task:"Bowl Game Event",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Bowl game event management"},{id:26,category:"Events",task:"Private Camps",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Private camp event setup"},{id:27,category:"Events",task:"HS Camp",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"High school camp events"},{id:28,category:"Events",task:"Youth Camps",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Youth camp events"},{id:29,category:"Events",task:"Choreography Events",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Choreography-specific events"},{id:30,category:"P&L",task:"Data Entry",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"P&L data entry system"},{id:31,category:"P&L",task:"Expenses Tracking",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Expense management"},{id:32,category:"P&L",task:"Reporting",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"P&L report generation"},{id:33,category:"P&L",task:"Multi Program Support",priority:"Medium",status:"Not Started",assignee:"",effort:"Large",notes:"P&L across multiple programs"},{id:34,category:"P&L",task:"Downs",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Downs tracking"},{id:35,category:"P&L",task:"Costume Commissions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Commission tracking for costumes"},{id:36,category:"P&L",task:"Apparel Commissions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Commission tracking for apparel"},{id:37,category:"Email/Text Platform",task:"Mass Emails",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Bulk email system"},{id:38,category:"Email/Text Platform",task:"Email Contractors",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Contractor communication emails"},{id:39,category:"Email/Text Platform",task:"Reminder Emails",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Automated reminder system"},{id:40,category:"Email/Text Platform",task:"Payment Recurring Emails",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Recurring payment notifications"},{id:41,category:"Email/Text Platform",task:"Contact Payment Emails",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Payment-related contact emails"},{id:42,category:"Classes",task:"Full Season Management",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Full season class scheduling"},{id:43,category:"Classes",task:"Special Sessions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Special session handling"},{id:44,category:"Classes",task:"Display Online / Product Search",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Online class catalog & search"},{id:45,category:"Classes",task:"Summer Classes",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Summer class programs"},{id:46,category:"Classes",task:"Show Tickets",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Ticket management for shows"},{id:47,category:"Classes",task:"Statuses / Published",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Class status & publishing workflow"},{id:48,category:"Classes",task:"Go Live Date / Time",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Scheduled go-live functionality"},{id:49,category:"Marketing",task:"Homepage Site Design",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Website homepage redesign"},{id:50,category:"Marketing",task:"Facebook Campaigns",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Social media marketing campaigns"},{id:51,category:"Marketing",task:"Registration Packets",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Registration marketing materials"},{id:52,category:"Marketing",task:"Free Class Signup",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Free trial class registration flow"},{id:53,category:"Marketing",task:"Email List Management",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Email subscriber management"},{id:54,category:"Marketing",task:"Mailing List Management",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Physical mailing list management"},{id:55,category:"Accounting",task:"Accounting System Setup",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Core accounting module — details TBD"}];
+function saveData(){try{localStorage.setItem('jfk_projects',JSON.stringify(projects))}catch(e){}}
+function loadData(){try{const d=localStorage.getItem('jfk_projects');if(d)projects=JSON.parse(d)}catch(e){}}
+loadData();
+let currentFilter='all';let currentSort={key:'id',dir:'asc'};let searchTerm='';
+function renderStats(){const total=projects.length;const notStarted=projects.filter(p=>p.status==='Not Started').length;const inProgress=projects.filter(p=>p.status==='In Progress').length;const done=projects.filter(p=>p.status==='Done').length;const categories=[...new Set(projects.map(p=>p.category))].length;document.getElementById('stats').innerHTML=`<div class="stat-card"><div class="label">Total Tasks</div><div class="value">${total}</div></div><div class="stat-card"><div class="label">Categories</div><div class="value">${categories}</div></div><div class="stat-card"><div class="label">Not Started</div><div class="value" style="color:var(--gray)">${notStarted}</div></div><div class="stat-card"><div class="label">In Progress</div><div class="value" style="color:var(--yellow)">${inProgress}</div></div><div class="stat-card"><div class="label">Done</div><div class="value" style="color:var(--green)">${done}</div></div>`}
+function getFilteredSorted(){let data=[...projects];if(currentFilter!=='all')data=data.filter(p=>p.category===currentFilter);if(searchTerm){const s=searchTerm.toLowerCase();data=data.filter(p=>p.category.toLowerCase().includes(s)||p.task.toLowerCase().includes(s)||p.notes.toLowerCase().includes(s)||p.assignee.toLowerCase().includes(s))}const priorityOrder={High:0,Medium:1,Low:2};const statusOrder={'In Progress':0,'Not Started':1,'Done':2};const effortOrder={Large:0,Medium:1,Small:2};data.sort((a,b)=>{let va=a[currentSort.key],vb=b[currentSort.key];if(currentSort.key==='priority'){va=priorityOrder[va];vb=priorityOrder[vb]}else if(currentSort.key==='status'){va=statusOrder[va]??1;vb=statusOrder[vb]??1}else if(currentSort.key==='effort'){va=effortOrder[va]??1;vb=effortOrder[vb]??1}if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase()}if(va<vb)return currentSort.dir==='asc'?-1:1;if(va>vb)return currentSort.dir==='asc'?1:-1;return 0});return data}
+function renderTable(){const data=getFilteredSorted();const tbody=document.getElementById('tableBody');tbody.innerHTML=data.map(p=>{const color=CATEGORY_COLORS[p.category]||'#64748b';return `<tr data-id="${p.id}"><td style="color:var(--text-muted);font-weight:500">${p.id}</td><td><span class="category-dot" style="background:${color}"></span><span class="badge badge-category" style="background:${color}15;color:${color}">${p.category}</span></td><td style="font-weight:600">${p.task}</td><td><select class="priority-select" onchange="updateField(${p.id},'priority',this.value)"><option ${p.priority==='High'?'selected':''}>High</option><option ${p.priority==='Medium'?'selected':''}>Medium</option><option ${p.priority==='Low'?'selected':''}>Low</option></select></td><td><select class="status-select" onchange="updateField(${p.id},'status',this.value)"><option ${p.status==='Not Started'?'selected':''}>Not Started</option><option ${p.status==='In Progress'?'selected':''}>In Progress</option><option ${p.status==='Done'?'selected':''}>Done</option></select></td><td><input class="assignee-input" value="${p.assignee}" placeholder="Unassigned" onchange="updateField(${p.id},'assignee',this.value)"></td><td><select class="effort-select" onchange="updateField(${p.id},'effort',this.value)"><option ${p.effort==='Small'?'selected':''}>Small</option><option ${p.effort==='Medium'?'selected':''}>Medium</option><option ${p.effort==='Large'?'selected':''}>Large</option></select></td><td><input class="notes-input" value="${p.notes}" onchange="updateField(${p.id},'notes',this.value)" style="min-width:180px"></td></tr>`}).join('');renderStats()}
+function updateField(id,field,value){const p=projects.find(x=>x.id===id);if(p){p[field]=value;saveData();renderStats()}}
+document.querySelectorAll('.filter-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentFilter=btn.dataset.filter;renderTable()})});
+document.getElementById('search').addEventListener('input',e=>{searchTerm=e.target.value;renderTable()});
+document.querySelectorAll('th[data-sort]').forEach(th=>{th.addEventListener('click',()=>{const key=th.dataset.sort;if(currentSort.key===key){currentSort.dir=currentSort.dir==='asc'?'desc':'asc'}else{currentSort={key,dir:'asc'}}document.querySelectorAll('th .sort-icon').forEach(s=>s.textContent='');th.querySelector('.sort-icon').textContent=currentSort.dir==='asc'?' ▲':' ▼';renderTable()})});
+function exportCSV(){const headers=['ID','Category','Task','Priority','Status','Assigned To','Effort','Notes'];const rows=projects.map(p=>[p.id,p.category,p.task,p.priority,p.status,p.assignee,p.effort,p.notes]);let csv=headers.join(',')+'\n'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jfk-platform-projects.csv';a.click()}
+function printView(){window.print()}
+renderTable();
+</script>
+</body>
+</html>
