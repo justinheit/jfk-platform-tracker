@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JFK Platform — Project Tracker</title>
+<title>JFK Platform â Project Tracker</title>
 <style>
   :root {
     --primary: #2563eb;
@@ -42,33 +42,112 @@
   .table-wrap { max-width: 1400px; margin: 0 auto; padding: 0 1rem 3rem; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; background: var(--card-bg); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
   thead { background: #f1f5f9; }
-  th { text-align: left; padding: 0.75rem 1rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; cursor: pointer; user-select: none; white-space: nowrap; position: relative; }
+  th { text-align: left; padding: 0.75rem 1rem; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600; cursor: pointer; user-select: none; white-space: nowrap; }
   th:hover { color: var(--primary); }
   th .sort-icon { margin-left: 4px; font-size: 0.7rem; }
   td { padding: 0.65rem 1rem; border-top: 1px solid var(--border); font-size: 0.9rem; vertical-align: top; }
-  tr:hover td { background: #f8fafc; }
+  tr:hover td { background: #f0f7ff; }
+  tr { cursor: pointer; }
   .badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
-  .badge-category { background: var(--blue-bg); color: var(--blue); }
   .badge-high { background: var(--red-bg); color: var(--red); }
   .badge-medium { background: var(--yellow-bg); color: var(--yellow); }
   .badge-low { background: var(--green-bg); color: var(--green); }
-  .status-select, .priority-select, .assignee-input, .effort-select, .notes-input { border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.5rem; font-size: 0.85rem; background: white; width: 100%; outline: none; }
-  .status-select:focus, .priority-select:focus, .assignee-input:focus, .effort-select:focus, .notes-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.15); }
-  .export-bar { max-width: 1400px; margin: 0 auto; padding: 0 1rem; display: flex; gap: 0.5rem; justify-content: flex-end; margin-bottom: 1rem; }
-  .export-btn { padding: 0.5rem 1.25rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: background 0.2s; }
-  .export-btn:hover { background: #1d4ed8; }
-  .export-btn.secondary { background: #475569; }
-  .export-btn.secondary:hover { background: #334155; }
+  .badge-status-not { background: var(--gray-bg); color: var(--gray); }
+  .badge-status-progress { background: var(--blue-bg); color: var(--blue); }
+  .badge-status-done { background: var(--green-bg); color: var(--green); }
   .category-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
-  @media (max-width: 768px) { .controls { flex-direction: column; } .search-box { width: 100%; } td, th { padding: 0.5rem 0.6rem; font-size: 0.8rem; } }
+  .export-bar { max-width: 1400px; margin: 0 auto; padding: 0 1rem; display: flex; gap: 0.5rem; justify-content: flex-end; margin-bottom: 1rem; align-items: center; }
+  .btn { padding: 0.5rem 1.25rem; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: background 0.2s; }
+  .btn-primary { background: var(--primary); }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-secondary { background: #475569; }
+  .btn-secondary:hover { background: #334155; }
+  .btn-success { background: var(--green); }
+  .btn-success:hover { background: #15803d; }
+  .btn-danger { background: var(--red); }
+  .btn-danger:hover { background: #b91c1c; }
+  .btn-add { font-size: 1rem; padding: 0.6rem 1.5rem; }
+
+  /* Modal Styles */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--card-bg); border-radius: 16px; width: 95%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .modal-header { padding: 1.5rem 2rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h2 { font-size: 1.25rem; font-weight: 700; }
+  .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); padding: 0.25rem 0.5rem; border-radius: 6px; }
+  .modal-close:hover { background: var(--gray-bg); color: var(--text); }
+  .modal-body { padding: 1.5rem 2rem; }
+  .modal-footer { padding: 1rem 2rem 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+  .form-group { margin-bottom: 1.25rem; }
+  .form-group label { display: block; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.4rem; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 0.6rem 0.8rem; border: 2px solid var(--border); border-radius: 8px;
+    font-size: 0.95rem; outline: none; transition: border-color 0.2s; font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+  .form-group textarea { min-height: 80px; resize: vertical; }
+  .form-row { display: flex; gap: 1rem; }
+  .form-row .form-group { flex: 1; }
+
+  /* Notes section in detail modal */
+  .notes-section { margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1.25rem; }
+  .notes-section h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
+  .note-item { background: var(--gray-bg); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 0.5rem; position: relative; }
+  .note-item .note-text { font-size: 0.9rem; white-space: pre-wrap; }
+  .note-item .note-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem; }
+  .note-item .note-delete { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; padding: 0.15rem 0.4rem; border-radius: 4px; }
+  .note-item .note-delete:hover { background: var(--red-bg); color: var(--red); }
+  .add-note-area { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+  .add-note-area textarea { flex: 1; min-height: 50px; padding: 0.5rem 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none; font-family: inherit; resize: vertical; }
+  .add-note-area textarea:focus { border-color: var(--primary); }
+  .add-note-area button { align-self: flex-end; }
+
+  .task-name-cell { font-weight: 600; color: var(--primary); }
+  .task-name-cell:hover { text-decoration: underline; }
+  .notes-indicator { display: inline-block; background: var(--blue-bg); color: var(--blue); font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 4px; margin-left: 0.5rem; font-weight: 600; }
+
+  /* Settings styles */
+  .settings-section { margin-bottom: 1.5rem; }
+  .settings-section h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  .team-list { list-style: none; }
+  .team-item { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.75rem; border-radius: 8px; margin-bottom: 0.35rem; background: var(--gray-bg); }
+  .team-item .team-name { font-weight: 500; }
+  .team-item .team-role { font-size: 0.8rem; color: var(--text-muted); }
+  .team-item .team-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0.1rem 0.4rem; border-radius: 4px; }
+  .team-item .team-remove:hover { background: var(--red-bg); color: var(--red); }
+  .add-team-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+  .add-team-row input { flex: 1; padding: 0.5rem 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.9rem; outline: none; }
+  .add-team-row input:focus { border-color: var(--primary); }
+  .settings-gear { background: none; border: 2px solid var(--border); border-radius: 8px; padding: 0.5rem 0.9rem; cursor: pointer; font-size: 1.1rem; transition: all 0.2s; }
+  .settings-gear:hover { border-color: var(--primary); background: var(--primary-light); }
+
+  .custom-cat-list { list-style: none; }
+  .custom-cat-item { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 8px; margin-bottom: 0.35rem; background: var(--gray-bg); }
+  .custom-cat-item .cat-color { width: 12px; height: 12px; border-radius: 50%; }
+  .custom-cat-item .cat-name { flex: 1; font-weight: 500; }
+  .custom-cat-item .cat-count { font-size: 0.8rem; color: var(--text-muted); }
+  .custom-cat-item .cat-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 0.1rem 0.4rem; border-radius: 4px; }
+  .custom-cat-item .cat-remove:hover { background: var(--red-bg); color: var(--red); }
+
+  @media (max-width: 768px) {
+    .controls { flex-direction: column; }
+    .search-box { width: 100%; }
+    td, th { padding: 0.5rem 0.6rem; font-size: 0.8rem; }
+    .form-row { flex-direction: column; gap: 0; }
+    .modal { width: 98%; }
+  }
 </style>
 </head>
 <body>
+
 <div class="header">
-  <h1>JFK Platform — Project Tracker</h1>
+  <h1>JFK Platform â Project Tracker</h1>
   <p>Software Development Roadmap &amp; Task Management</p>
 </div>
+
 <div class="stats" id="stats"></div>
+
 <div class="controls">
   <input type="text" class="search-box" id="search" placeholder="Search tasks, categories, notes...">
   <button class="filter-btn active" data-filter="all">All</button>
@@ -82,10 +161,14 @@
   <button class="filter-btn" data-filter="Marketing">Marketing</button>
   <button class="filter-btn" data-filter="Accounting">Accounting</button>
 </div>
+
 <div class="export-bar">
-  <button class="export-btn secondary" onclick="exportCSV()">Export CSV</button>
-  <button class="export-btn" onclick="printView()">Print View</button>
+  <button class="btn btn-success btn-add" onclick="openAddModal()">+ Add Project</button>
+  <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+  <button class="btn btn-primary" onclick="printView()">Print View</button>
+  <button class="settings-gear" onclick="openSettingsModal()" title="Settings">&#9881;</button>
 </div>
+
 <div class="table-wrap">
   <table id="projectTable">
     <thead><tr>
@@ -96,27 +179,532 @@
       <th data-sort="status">Status <span class="sort-icon"></span></th>
       <th data-sort="assignee">Assigned To <span class="sort-icon"></span></th>
       <th data-sort="effort">Effort <span class="sort-icon"></span></th>
-      <th>Notes</th>
+      <th>Description</th>
     </tr></thead>
     <tbody id="tableBody"></tbody>
   </table>
 </div>
+
+<!-- Add Project Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Add New Project</h2>
+      <button class="modal-close" onclick="closeAddModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Task / Feature Name *</label>
+        <input type="text" id="addTask" placeholder="e.g., Payment Gateway v2">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="addCategory"></select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="addPriority">
+            <option>Medium</option>
+            <option>High</option>
+            <option>Low</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Status</label>
+          <select id="addStatus">
+            <option>Not Started</option>
+            <option>In Progress</option>
+            <option>Done</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Effort</label>
+          <select id="addEffort">
+            <option>Medium</option>
+            <option>Small</option>
+            <option>Large</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Assigned To</label>
+        <select id="addAssignee"></select>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="addDescription" placeholder="Brief description of the project..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Initial Note (optional)</label>
+        <textarea id="addNote" placeholder="Add any initial notes..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-success" onclick="addProject()">Add Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Settings</h2>
+      <button class="modal-close" onclick="closeSettingsModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="settingsBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="closeSettingsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="detailTitle">Task Details</h2>
+      <button class="modal-close" onclick="closeDetailModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="detailDeleteBtn" onclick="deleteProject()">Delete Project</button>
+      <button class="btn btn-secondary" onclick="closeDetailModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDetailChanges()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const CATEGORY_COLORS={"Payments/Billing":"#2563eb","Netsuite Integration":"#7c3aed","Events":"#059669","P&L":"#dc2626","Email/Text Platform":"#ea580c","Classes":"#0891b2","Director Training":"#4f46e5","Marketing":"#d946ef","Accounting":"#ca8a04"};
-let projects=[{id:1,category:"Payments/Billing",task:"Auth.net Integration",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Payment gateway setup"},{id:2,category:"Payments/Billing",task:"Recurring Monthly Payments",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Automated monthly billing"},{id:3,category:"Payments/Billing",task:"Camps - Events Payments",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Payment processing for camps & events"},{id:4,category:"Payments/Billing",task:"Auto Collection CMI",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Automated collection system"},{id:5,category:"Payments/Billing",task:"Auto Billing Systems",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Automated billing infrastructure"},{id:6,category:"Payments/Billing",task:"Registration Fees / Siblings",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Sibling discount handling for registration"},{id:7,category:"Payments/Billing",task:"Payment Plan - Bowl Game",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Installment plans for bowl game fees"},{id:8,category:"Payments/Billing",task:"Costumes Billing",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Costume fee management"},{id:9,category:"Payments/Billing",task:"Late Fees",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Late payment fee automation"},{id:10,category:"Director Training",task:"Choreography Resources",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Choreography training materials"},{id:11,category:"Director Training",task:"Training Modules",priority:"Medium",status:"Not Started",assignee:"",effort:"Large",notes:"Director training curriculum"},{id:12,category:"Director Training",task:"Music Library",priority:"Low",status:"Not Started",assignee:"",effort:"Medium",notes:"Music resource management"},{id:13,category:"Director Training",task:"Forms",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Training-related forms"},{id:14,category:"Director Training",task:"Resource Library",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Central training resource repository"},{id:15,category:"Netsuite Integration",task:"Products / Kits",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Product & kit sync with Netsuite"},{id:16,category:"Netsuite Integration",task:"Imports - Uniforms",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Uniform data import"},{id:17,category:"Netsuite Integration",task:"Imports - Parade",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Parade item data import"},{id:18,category:"Netsuite Integration",task:"Imports - Shoes",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Shoe inventory import"},{id:19,category:"Netsuite Integration",task:"Imports - Bowl Game",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Bowl game merchandise import"},{id:20,category:"Netsuite Integration",task:"Imports - Costumewear",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Costumewear data import"},{id:21,category:"Netsuite Integration",task:"Tax Reporting",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Tax reporting integration"},{id:22,category:"Netsuite Integration",task:"Director Merchandise Sales",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Director merch sales tracking"},{id:23,category:"Events",task:"Two (Event Type)",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Two-day event management"},{id:24,category:"Events",task:"SOS Events",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"SOS event type support"},{id:25,category:"Events",task:"Bowl Game Event",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Bowl game event management"},{id:26,category:"Events",task:"Private Camps",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Private camp event setup"},{id:27,category:"Events",task:"HS Camp",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"High school camp events"},{id:28,category:"Events",task:"Youth Camps",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Youth camp events"},{id:29,category:"Events",task:"Choreography Events",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Choreography-specific events"},{id:30,category:"P&L",task:"Data Entry",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"P&L data entry system"},{id:31,category:"P&L",task:"Expenses Tracking",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Expense management"},{id:32,category:"P&L",task:"Reporting",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"P&L report generation"},{id:33,category:"P&L",task:"Multi Program Support",priority:"Medium",status:"Not Started",assignee:"",effort:"Large",notes:"P&L across multiple programs"},{id:34,category:"P&L",task:"Downs",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Downs tracking"},{id:35,category:"P&L",task:"Costume Commissions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Commission tracking for costumes"},{id:36,category:"P&L",task:"Apparel Commissions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Commission tracking for apparel"},{id:37,category:"Email/Text Platform",task:"Mass Emails",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Bulk email system"},{id:38,category:"Email/Text Platform",task:"Email Contractors",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Contractor communication emails"},{id:39,category:"Email/Text Platform",task:"Reminder Emails",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Automated reminder system"},{id:40,category:"Email/Text Platform",task:"Payment Recurring Emails",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Recurring payment notifications"},{id:41,category:"Email/Text Platform",task:"Contact Payment Emails",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Payment-related contact emails"},{id:42,category:"Classes",task:"Full Season Management",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Full season class scheduling"},{id:43,category:"Classes",task:"Special Sessions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Special session handling"},{id:44,category:"Classes",task:"Display Online / Product Search",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Online class catalog & search"},{id:45,category:"Classes",task:"Summer Classes",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Summer class programs"},{id:46,category:"Classes",task:"Show Tickets",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Ticket management for shows"},{id:47,category:"Classes",task:"Statuses / Published",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Class status & publishing workflow"},{id:48,category:"Classes",task:"Go Live Date / Time",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Scheduled go-live functionality"},{id:49,category:"Marketing",task:"Homepage Site Design",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Website homepage redesign"},{id:50,category:"Marketing",task:"Facebook Campaigns",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Social media marketing campaigns"},{id:51,category:"Marketing",task:"Registration Packets",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Registration marketing materials"},{id:52,category:"Marketing",task:"Free Class Signup",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Free trial class registration flow"},{id:53,category:"Marketing",task:"Email List Management",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Email subscriber management"},{id:54,category:"Marketing",task:"Mailing List Management",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Physical mailing list management"},{id:55,category:"Accounting",task:"Accounting System Setup",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Core accounting module — details TBD"}];
-function saveData(){try{localStorage.setItem('jfk_projects',JSON.stringify(projects))}catch(e){}}
-function loadData(){try{const d=localStorage.getItem('jfk_projects');if(d)projects=JSON.parse(d)}catch(e){}}
+let CATEGORY_COLORS={"Payments/Billing":"#2563eb","Netsuite Integration":"#7c3aed","Events":"#059669","P&L":"#dc2626","Email/Text Platform":"#ea580c","Classes":"#0891b2","Director Training":"#4f46e5","Marketing":"#d946ef","Accounting":"#ca8a04"};
+const DEFAULT_COLORS=['#2563eb','#7c3aed','#059669','#dc2626','#ea580c','#0891b2','#4f46e5','#d946ef','#ca8a04','#0d9488','#be185d','#9333ea','#65a30d','#c2410c','#0369a1'];
+
+// Team members
+let teamMembers = [];
+function loadTeam(){try{const d=localStorage.getItem('jfk_team');if(d)teamMembers=JSON.parse(d)}catch(e){}}
+function saveTeam(){try{localStorage.setItem('jfk_team',JSON.stringify(teamMembers))}catch(e){}}
+loadTeam();
+
+// Custom categories
+function loadCategories(){try{const d=localStorage.getItem('jfk_categories');if(d)CATEGORY_COLORS=JSON.parse(d)}catch(e){}}
+function saveCategories(){try{localStorage.setItem('jfk_categories',JSON.stringify(CATEGORY_COLORS))}catch(e){}}
+loadCategories();
+
+function getCategories(){return Object.keys(CATEGORY_COLORS)}
+
+function getAssigneeOptions(selected){
+  let opts='<option value="">Unassigned</option>';
+  teamMembers.forEach(m=>{opts+=`<option${m.name===selected?' selected':''}>${escHtml(m.name)}${m.role?' ('+escHtml(m.role)+')':''}</option>`});
+  if(selected && !teamMembers.find(m=>m.name===selected)){opts+=`<option selected>${escHtml(selected)}</option>`}
+  return opts;
+}
+
+function getCategoryOptions(selected){
+  return getCategories().map(c=>`<option${c===selected?' selected':''}>${c}</option>`).join('');
+}
+
+let projects=[
+  {id:1,category:"Payments/Billing",task:"Auth.net Integration",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Payment gateway setup",notesList:[]},
+  {id:2,category:"Payments/Billing",task:"Recurring Monthly Payments",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Automated monthly billing",notesList:[]},
+  {id:3,category:"Payments/Billing",task:"Camps - Events Payments",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Payment processing for camps & events",notesList:[]},
+  {id:4,category:"Payments/Billing",task:"Auto Collection CMI",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Automated collection system",notesList:[]},
+  {id:5,category:"Payments/Billing",task:"Auto Billing Systems",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Automated billing infrastructure",notesList:[]},
+  {id:6,category:"Payments/Billing",task:"Registration Fees / Siblings",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Sibling discount handling for registration",notesList:[]},
+  {id:7,category:"Payments/Billing",task:"Payment Plan - Bowl Game",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Installment plans for bowl game fees",notesList:[]},
+  {id:8,category:"Payments/Billing",task:"Costumes Billing",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Costume fee management",notesList:[]},
+  {id:9,category:"Payments/Billing",task:"Late Fees",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Late payment fee automation",notesList:[]},
+  {id:10,category:"Director Training",task:"Choreography Resources",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Choreography training materials",notesList:[]},
+  {id:11,category:"Director Training",task:"Training Modules",priority:"Medium",status:"Not Started",assignee:"",effort:"Large",notes:"Director training curriculum",notesList:[]},
+  {id:12,category:"Director Training",task:"Music Library",priority:"Low",status:"Not Started",assignee:"",effort:"Medium",notes:"Music resource management",notesList:[]},
+  {id:13,category:"Director Training",task:"Forms",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Training-related forms",notesList:[]},
+  {id:14,category:"Director Training",task:"Resource Library",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Central training resource repository",notesList:[]},
+  {id:15,category:"Netsuite Integration",task:"Products / Kits",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Product & kit sync with Netsuite",notesList:[]},
+  {id:16,category:"Netsuite Integration",task:"Imports - Uniforms",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Uniform data import",notesList:[]},
+  {id:17,category:"Netsuite Integration",task:"Imports - Parade",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Parade item data import",notesList:[]},
+  {id:18,category:"Netsuite Integration",task:"Imports - Shoes",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Shoe inventory import",notesList:[]},
+  {id:19,category:"Netsuite Integration",task:"Imports - Bowl Game",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Bowl game merchandise import",notesList:[]},
+  {id:20,category:"Netsuite Integration",task:"Imports - Costumewear",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Costumewear data import",notesList:[]},
+  {id:21,category:"Netsuite Integration",task:"Tax Reporting",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Tax reporting integration",notesList:[]},
+  {id:22,category:"Netsuite Integration",task:"Director Merchandise Sales",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Director merch sales tracking",notesList:[]},
+  {id:23,category:"Events",task:"Two (Event Type)",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Two-day event management",notesList:[]},
+  {id:24,category:"Events",task:"SOS Events",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"SOS event type support",notesList:[]},
+  {id:25,category:"Events",task:"Bowl Game Event",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Bowl game event management",notesList:[]},
+  {id:26,category:"Events",task:"Private Camps",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Private camp event setup",notesList:[]},
+  {id:27,category:"Events",task:"HS Camp",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"High school camp events",notesList:[]},
+  {id:28,category:"Events",task:"Youth Camps",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Youth camp events",notesList:[]},
+  {id:29,category:"Events",task:"Choreography Events",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Choreography-specific events",notesList:[]},
+  {id:30,category:"P&L",task:"Data Entry",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"P&L data entry system",notesList:[]},
+  {id:31,category:"P&L",task:"Expenses Tracking",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Expense management",notesList:[]},
+  {id:32,category:"P&L",task:"Reporting",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"P&L report generation",notesList:[]},
+  {id:33,category:"P&L",task:"Multi Program Support",priority:"Medium",status:"Not Started",assignee:"",effort:"Large",notes:"P&L across multiple programs",notesList:[]},
+  {id:34,category:"P&L",task:"Downs",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Downs tracking",notesList:[]},
+  {id:35,category:"P&L",task:"Costume Commissions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Commission tracking for costumes",notesList:[]},
+  {id:36,category:"P&L",task:"Apparel Commissions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Commission tracking for apparel",notesList:[]},
+  {id:37,category:"Email/Text Platform",task:"Mass Emails",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Bulk email system",notesList:[]},
+  {id:38,category:"Email/Text Platform",task:"Email Contractors",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Contractor communication emails",notesList:[]},
+  {id:39,category:"Email/Text Platform",task:"Reminder Emails",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Automated reminder system",notesList:[]},
+  {id:40,category:"Email/Text Platform",task:"Payment Recurring Emails",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Recurring payment notifications",notesList:[]},
+  {id:41,category:"Email/Text Platform",task:"Contact Payment Emails",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Payment-related contact emails",notesList:[]},
+  {id:42,category:"Classes",task:"Full Season Management",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Full season class scheduling",notesList:[]},
+  {id:43,category:"Classes",task:"Special Sessions",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Special session handling",notesList:[]},
+  {id:44,category:"Classes",task:"Display Online / Product Search",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Online class catalog & search",notesList:[]},
+  {id:45,category:"Classes",task:"Summer Classes",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Summer class programs",notesList:[]},
+  {id:46,category:"Classes",task:"Show Tickets",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Ticket management for shows",notesList:[]},
+  {id:47,category:"Classes",task:"Statuses / Published",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Class status & publishing workflow",notesList:[]},
+  {id:48,category:"Classes",task:"Go Live Date / Time",priority:"Medium",status:"Not Started",assignee:"",effort:"Small",notes:"Scheduled go-live functionality",notesList:[]},
+  {id:49,category:"Marketing",task:"Homepage Site Design",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Website homepage redesign",notesList:[]},
+  {id:50,category:"Marketing",task:"Facebook Campaigns",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Social media marketing campaigns",notesList:[]},
+  {id:51,category:"Marketing",task:"Registration Packets",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Registration marketing materials",notesList:[]},
+  {id:52,category:"Marketing",task:"Free Class Signup",priority:"High",status:"Not Started",assignee:"",effort:"Medium",notes:"Free trial class registration flow",notesList:[]},
+  {id:53,category:"Marketing",task:"Email List Management",priority:"Medium",status:"Not Started",assignee:"",effort:"Medium",notes:"Email subscriber management",notesList:[]},
+  {id:54,category:"Marketing",task:"Mailing List Management",priority:"Low",status:"Not Started",assignee:"",effort:"Small",notes:"Physical mailing list management",notesList:[]},
+  {id:55,category:"Accounting",task:"Accounting System Setup",priority:"High",status:"Not Started",assignee:"",effort:"Large",notes:"Core accounting module - details TBD",notesList:[]}
+];
+
+function saveData(){try{localStorage.setItem('jfk_projects_v2',JSON.stringify(projects))}catch(e){}}
+function loadData(){try{const d=localStorage.getItem('jfk_projects_v2');if(d){projects=JSON.parse(d);projects.forEach(p=>{if(!p.notesList)p.notesList=[]})}}catch(e){}}
 loadData();
-let currentFilter='all';let currentSort={key:'id',dir:'asc'};let searchTerm='';
-function renderStats(){const total=projects.length;const notStarted=projects.filter(p=>p.status==='Not Started').length;const inProgress=projects.filter(p=>p.status==='In Progress').length;const done=projects.filter(p=>p.status==='Done').length;const categories=[...new Set(projects.map(p=>p.category))].length;document.getElementById('stats').innerHTML=`<div class="stat-card"><div class="label">Total Tasks</div><div class="value">${total}</div></div><div class="stat-card"><div class="label">Categories</div><div class="value">${categories}</div></div><div class="stat-card"><div class="label">Not Started</div><div class="value" style="color:var(--gray)">${notStarted}</div></div><div class="stat-card"><div class="label">In Progress</div><div class="value" style="color:var(--yellow)">${inProgress}</div></div><div class="stat-card"><div class="label">Done</div><div class="value" style="color:var(--green)">${done}</div></div>`}
-function getFilteredSorted(){let data=[...projects];if(currentFilter!=='all')data=data.filter(p=>p.category===currentFilter);if(searchTerm){const s=searchTerm.toLowerCase();data=data.filter(p=>p.category.toLowerCase().includes(s)||p.task.toLowerCase().includes(s)||p.notes.toLowerCase().includes(s)||p.assignee.toLowerCase().includes(s))}const priorityOrder={High:0,Medium:1,Low:2};const statusOrder={'In Progress':0,'Not Started':1,'Done':2};const effortOrder={Large:0,Medium:1,Small:2};data.sort((a,b)=>{let va=a[currentSort.key],vb=b[currentSort.key];if(currentSort.key==='priority'){va=priorityOrder[va];vb=priorityOrder[vb]}else if(currentSort.key==='status'){va=statusOrder[va]??1;vb=statusOrder[vb]??1}else if(currentSort.key==='effort'){va=effortOrder[va]??1;vb=effortOrder[vb]??1}if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase()}if(va<vb)return currentSort.dir==='asc'?-1:1;if(va>vb)return currentSort.dir==='asc'?1:-1;return 0});return data}
-function renderTable(){const data=getFilteredSorted();const tbody=document.getElementById('tableBody');tbody.innerHTML=data.map(p=>{const color=CATEGORY_COLORS[p.category]||'#64748b';return `<tr data-id="${p.id}"><td style="color:var(--text-muted);font-weight:500">${p.id}</td><td><span class="category-dot" style="background:${color}"></span><span class="badge badge-category" style="background:${color}15;color:${color}">${p.category}</span></td><td style="font-weight:600">${p.task}</td><td><select class="priority-select" onchange="updateField(${p.id},'priority',this.value)"><option ${p.priority==='High'?'selected':''}>High</option><option ${p.priority==='Medium'?'selected':''}>Medium</option><option ${p.priority==='Low'?'selected':''}>Low</option></select></td><td><select class="status-select" onchange="updateField(${p.id},'status',this.value)"><option ${p.status==='Not Started'?'selected':''}>Not Started</option><option ${p.status==='In Progress'?'selected':''}>In Progress</option><option ${p.status==='Done'?'selected':''}>Done</option></select></td><td><input class="assignee-input" value="${p.assignee}" placeholder="Unassigned" onchange="updateField(${p.id},'assignee',this.value)"></td><td><select class="effort-select" onchange="updateField(${p.id},'effort',this.value)"><option ${p.effort==='Small'?'selected':''}>Small</option><option ${p.effort==='Medium'?'selected':''}>Medium</option><option ${p.effort==='Large'?'selected':''}>Large</option></select></td><td><input class="notes-input" value="${p.notes}" onchange="updateField(${p.id},'notes',this.value)" style="min-width:180px"></td></tr>`}).join('');renderStats()}
-function updateField(id,field,value){const p=projects.find(x=>x.id===id);if(p){p[field]=value;saveData();renderStats()}}
+
+let currentFilter='all', currentSort={key:'id',dir:'asc'}, searchTerm='', currentDetailId=null;
+
+function getNextId(){return projects.length?Math.max(...projects.map(p=>p.id))+1:1}
+
+function escHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+
+function formatDate(ts){const d=new Date(ts);return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}
+
+function renderStats(){
+  const total=projects.length;
+  const notStarted=projects.filter(p=>p.status==='Not Started').length;
+  const inProgress=projects.filter(p=>p.status==='In Progress').length;
+  const done=projects.filter(p=>p.status==='Done').length;
+  const categories=[...new Set(projects.map(p=>p.category))].length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat-card"><div class="label">Total Tasks</div><div class="value">${total}</div></div>
+    <div class="stat-card"><div class="label">Categories</div><div class="value">${categories}</div></div>
+    <div class="stat-card"><div class="label">Not Started</div><div class="value" style="color:var(--gray)">${notStarted}</div></div>
+    <div class="stat-card"><div class="label">In Progress</div><div class="value" style="color:var(--yellow)">${inProgress}</div></div>
+    <div class="stat-card"><div class="label">Done</div><div class="value" style="color:var(--green)">${done}</div></div>`;
+}
+
+function getFilteredSorted(){
+  let data=[...projects];
+  if(currentFilter!=='all')data=data.filter(p=>p.category===currentFilter);
+  if(searchTerm){const s=searchTerm.toLowerCase();data=data.filter(p=>p.category.toLowerCase().includes(s)||p.task.toLowerCase().includes(s)||p.notes.toLowerCase().includes(s)||p.assignee.toLowerCase().includes(s)||(p.notesList||[]).some(n=>n.text.toLowerCase().includes(s)))}
+  const po={High:0,Medium:1,Low:2},so={'In Progress':0,'Not Started':1,'Done':2},eo={Large:0,Medium:1,Small:2};
+  data.sort((a,b)=>{let va=a[currentSort.key],vb=b[currentSort.key];if(currentSort.key==='priority'){va=po[va];vb=po[vb]}else if(currentSort.key==='status'){va=so[va]??1;vb=so[vb]??1}else if(currentSort.key==='effort'){va=eo[va]??1;vb=eo[vb]??1}if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase()}if(va<vb)return currentSort.dir==='asc'?-1:1;if(va>vb)return currentSort.dir==='asc'?1:-1;return 0});
+  return data;
+}
+
+function renderTable(){
+  const data=getFilteredSorted();
+  const tbody=document.getElementById('tableBody');
+  tbody.innerHTML=data.map(p=>{
+    const color=CATEGORY_COLORS[p.category]||'#64748b';
+    const prClass=p.priority==='High'?'badge-high':p.priority==='Medium'?'badge-medium':'badge-low';
+    const stClass=p.status==='Done'?'badge-status-done':p.status==='In Progress'?'badge-status-progress':'badge-status-not';
+    const noteCount=(p.notesList||[]).length;
+    const notesBadge=noteCount?`<span class="notes-indicator">${noteCount} note${noteCount>1?'s':''}</span>`:'';
+    return `<tr data-id="${p.id}" onclick="openDetailModal(${p.id})">
+      <td style="color:var(--text-muted);font-weight:500">${p.id}</td>
+      <td><span class="category-dot" style="background:${color}"></span><span class="badge" style="background:${color}15;color:${color}">${escHtml(p.category)}</span></td>
+      <td class="task-name-cell">${escHtml(p.task)}${notesBadge}</td>
+      <td><span class="badge ${prClass}">${p.priority}</span></td>
+      <td><span class="badge ${stClass}">${p.status}</span></td>
+      <td style="color:${p.assignee?'var(--text)':'var(--text-muted)'}">${p.assignee||'Unassigned'}</td>
+      <td>${p.effort}</td>
+      <td style="color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(p.notes)}</td>
+    </tr>`}).join('');
+  renderStats();
+}
+
+// ---- Add Project Modal ----
+function openAddModal(){
+  document.getElementById('addTask').value='';
+  document.getElementById('addCategory').innerHTML='<option value="">Select category...</option>'+getCategoryOptions('');
+  document.getElementById('addPriority').value='Medium';
+  document.getElementById('addStatus').value='Not Started';
+  document.getElementById('addEffort').value='Medium';
+  document.getElementById('addAssignee').innerHTML=getAssigneeOptions('');
+  document.getElementById('addDescription').value='';
+  document.getElementById('addNote').value='';
+  document.getElementById('addModal').classList.add('active');
+  setTimeout(()=>document.getElementById('addTask').focus(),100);
+}
+function closeAddModal(){document.getElementById('addModal').classList.remove('active')}
+
+function addProject(){
+  const task=document.getElementById('addTask').value.trim();
+  const category=document.getElementById('addCategory').value;
+  if(!task){alert('Please enter a task name.');return}
+  if(!category){alert('Please select a category.');return}
+  const newProject={
+    id:getNextId(),
+    category,
+    task,
+    priority:document.getElementById('addPriority').value,
+    status:document.getElementById('addStatus').value,
+    assignee:document.getElementById('addAssignee').value,
+    effort:document.getElementById('addEffort').value,
+    notes:document.getElementById('addDescription').value.trim(),
+    notesList:[]
+  };
+  const initialNote=document.getElementById('addNote').value.trim();
+  if(initialNote){newProject.notesList.push({text:initialNote,timestamp:Date.now()})}
+  projects.push(newProject);
+  saveData();
+  closeAddModal();
+  renderTable();
+}
+
+// ---- Task Detail Modal ----
+function openDetailModal(id){
+  currentDetailId=id;
+  const p=projects.find(x=>x.id===id);
+  if(!p)return;
+  document.getElementById('detailTitle').textContent=p.task;
+  const color=CATEGORY_COLORS[p.category]||'#64748b';
+  const notesHtml=(p.notesList||[]).map((n,i)=>`
+    <div class="note-item">
+      <button class="note-delete" onclick="deleteNote(${id},${i})" title="Delete note">&times;</button>
+      <div class="note-text">${escHtml(n.text)}</div>
+      <div class="note-meta">${formatDate(n.timestamp)}</div>
+    </div>`).join('')||'<p style="color:var(--text-muted);font-size:0.9rem">No notes yet. Add one below.</p>';
+
+  document.getElementById('detailBody').innerHTML=`
+    <div class="form-group">
+      <label>Task / Feature Name</label>
+      <input type="text" id="detailTask" value="${escHtml(p.task)}">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="detailCategory">${getCategoryOptions(p.category)}</select>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <select id="detailPriority">${['High','Medium','Low'].map(v=>`<option${v===p.priority?' selected':''}>${v}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Status</label>
+        <select id="detailStatus">${['Not Started','In Progress','Done'].map(v=>`<option${v===p.status?' selected':''}>${v}</option>`).join('')}</select>
+      </div>
+      <div class="form-group">
+        <label>Effort</label>
+        <select id="detailEffort">${['Small','Medium','Large'].map(v=>`<option${v===p.effort?' selected':''}>${v}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Assigned To</label>
+      <select id="detailAssignee">${getAssigneeOptions(p.assignee)}</select>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="detailNotes">${escHtml(p.notes)}</textarea>
+    </div>
+    <div class="notes-section">
+      <h3>Notes &amp; Comments <span style="font-weight:400;color:var(--text-muted);font-size:0.85rem">(${(p.notesList||[]).length})</span></h3>
+      ${notesHtml}
+      <div class="add-note-area">
+        <textarea id="newNoteText" placeholder="Add a note..."></textarea>
+        <button class="btn btn-primary" onclick="addNote(${id})" style="white-space:nowrap">Add Note</button>
+      </div>
+    </div>`;
+  document.getElementById('detailModal').classList.add('active');
+}
+
+function closeDetailModal(){document.getElementById('detailModal').classList.remove('active');currentDetailId=null}
+
+function saveDetailChanges(){
+  const p=projects.find(x=>x.id===currentDetailId);
+  if(!p)return;
+  p.task=document.getElementById('detailTask').value.trim()||p.task;
+  p.category=document.getElementById('detailCategory').value;
+  p.priority=document.getElementById('detailPriority').value;
+  p.status=document.getElementById('detailStatus').value;
+  p.effort=document.getElementById('detailEffort').value;
+  p.assignee=document.getElementById('detailAssignee').value;
+  p.notes=document.getElementById('detailNotes').value.trim();
+  saveData();
+  closeDetailModal();
+  renderTable();
+}
+
+function deleteProject(){
+  if(!confirm('Are you sure you want to delete this project?'))return;
+  projects=projects.filter(p=>p.id!==currentDetailId);
+  saveData();
+  closeDetailModal();
+  renderTable();
+}
+
+function addNote(id){
+  const textarea=document.getElementById('newNoteText');
+  const text=textarea.value.trim();
+  if(!text)return;
+  const p=projects.find(x=>x.id===id);
+  if(!p)return;
+  if(!p.notesList)p.notesList=[];
+  p.notesList.push({text,timestamp:Date.now()});
+  saveData();
+  openDetailModal(id);
+}
+
+function deleteNote(id,index){
+  const p=projects.find(x=>x.id===id);
+  if(!p||!p.notesList)return;
+  p.notesList.splice(index,1);
+  saveData();
+  openDetailModal(id);
+}
+
+// Filter buttons
 document.querySelectorAll('.filter-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentFilter=btn.dataset.filter;renderTable()})});
+
+// Search
 document.getElementById('search').addEventListener('input',e=>{searchTerm=e.target.value;renderTable()});
-document.querySelectorAll('th[data-sort]').forEach(th=>{th.addEventListener('click',()=>{const key=th.dataset.sort;if(currentSort.key===key){currentSort.dir=currentSort.dir==='asc'?'desc':'asc'}else{currentSort={key,dir:'asc'}}document.querySelectorAll('th .sort-icon').forEach(s=>s.textContent='');th.querySelector('.sort-icon').textContent=currentSort.dir==='asc'?' ▲':' ▼';renderTable()})});
-function exportCSV(){const headers=['ID','Category','Task','Priority','Status','Assigned To','Effort','Notes'];const rows=projects.map(p=>[p.id,p.category,p.task,p.priority,p.status,p.assignee,p.effort,p.notes]);let csv=headers.join(',')+'\n'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jfk-platform-projects.csv';a.click()}
+
+// Sort headers
+document.querySelectorAll('th[data-sort]').forEach(th=>{th.addEventListener('click',()=>{const key=th.dataset.sort;if(currentSort.key===key){currentSort.dir=currentSort.dir==='asc'?'desc':'asc'}else{currentSort={key,dir:'asc'}}document.querySelectorAll('th .sort-icon').forEach(s=>s.textContent='');th.querySelector('.sort-icon').textContent=currentSort.dir==='asc'?' \u25B2':' \u25BC';renderTable()})});
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o){o.classList.remove('active');currentDetailId=null}})});
+
+// Close modals on Escape
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){document.querySelectorAll('.modal-overlay.active').forEach(o=>{o.classList.remove('active')});currentDetailId=null}});
+
+// Handle Enter key in settings inputs
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.id==='newMemberName')addTeamMember();
+  if(e.key==='Enter'&&e.target.id==='newCatName')addCategory();
+});
+
+// ---- Settings Modal ----
+function openSettingsModal(){
+  renderSettingsBody();
+  document.getElementById('settingsModal').classList.add('active');
+}
+function closeSettingsModal(){document.getElementById('settingsModal').classList.remove('active')}
+
+function renderSettingsBody(){
+  const cats=getCategories();
+  const teamHtml=teamMembers.length?teamMembers.map((m,i)=>`
+    <div class="team-item">
+      <div><span class="team-name">${escHtml(m.name)}</span>${m.role?` <span class="team-role">- ${escHtml(m.role)}</span>`:''}</div>
+      <button class="team-remove" onclick="removeTeamMember(${i})" title="Remove">&times;</button>
+    </div>`).join(''):'<p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:0.5rem">No team members yet. Add people below to assign tasks to them.</p>';
+
+  const catHtml=cats.map(c=>{
+    const count=projects.filter(p=>p.category===c).length;
+    const color=CATEGORY_COLORS[c]||'#64748b';
+    return `<div class="custom-cat-item">
+      <span class="cat-color" style="background:${color}"></span>
+      <span class="cat-name">${escHtml(c)}</span>
+      <span class="cat-count">${count} task${count!==1?'s':''}</span>
+      ${count===0?`<button class="cat-remove" onclick="removeCategory('${escHtml(c)}')" title="Remove">&times;</button>`:''}
+    </div>`}).join('');
+
+  document.getElementById('settingsBody').innerHTML=`
+    <div class="settings-section">
+      <h3>Team Members</h3>
+      <div id="teamList">${teamHtml}</div>
+      <div class="add-team-row">
+        <input type="text" id="newMemberName" placeholder="Name (e.g., Jane Smith)">
+        <input type="text" id="newMemberRole" placeholder="Role (optional)" style="max-width:160px">
+        <button class="btn btn-success" onclick="addTeamMember()">Add</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3>Categories</h3>
+      <div>${catHtml}</div>
+      <div class="add-team-row" style="margin-top:0.75rem">
+        <input type="text" id="newCatName" placeholder="New category name">
+        <button class="btn btn-success" onclick="addCategory()">Add</button>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-top:0.5rem">Categories with 0 tasks can be removed.</p>
+    </div>`;
+}
+
+function addTeamMember(){
+  const nameEl=document.getElementById('newMemberName');
+  const roleEl=document.getElementById('newMemberRole');
+  const name=nameEl.value.trim();
+  if(!name){alert('Please enter a name.');return}
+  if(teamMembers.find(m=>m.name.toLowerCase()===name.toLowerCase())){alert('This person is already on the team.');return}
+  teamMembers.push({name,role:roleEl.value.trim()});
+  saveTeam();
+  renderSettingsBody();
+}
+
+function removeTeamMember(index){
+  teamMembers.splice(index,1);
+  saveTeam();
+  renderSettingsBody();
+}
+
+function addCategory(){
+  const nameEl=document.getElementById('newCatName');
+  const name=nameEl.value.trim();
+  if(!name){alert('Please enter a category name.');return}
+  if(CATEGORY_COLORS[name]){alert('This category already exists.');return}
+  const usedColors=Object.values(CATEGORY_COLORS);
+  const availColor=DEFAULT_COLORS.find(c=>!usedColors.includes(c))||'#'+Math.floor(Math.random()*16777215).toString(16).padStart(6,'0');
+  CATEGORY_COLORS[name]=availColor;
+  saveCategories();
+  renderSettingsBody();
+  updateFilterButtons();
+}
+
+function removeCategory(name){
+  if(projects.some(p=>p.category===name)){alert('Cannot remove a category that has tasks.');return}
+  delete CATEGORY_COLORS[name];
+  saveCategories();
+  renderSettingsBody();
+  updateFilterButtons();
+}
+
+function updateFilterButtons(){
+  const container=document.querySelector('.controls');
+  const searchBox=container.querySelector('.search-box');
+  container.innerHTML='';
+  container.appendChild(searchBox);
+  const allBtn=document.createElement('button');
+  allBtn.className='filter-btn'+(currentFilter==='all'?' active':'');
+  allBtn.dataset.filter='all';
+  allBtn.textContent='All';
+  container.appendChild(allBtn);
+  getCategories().forEach(cat=>{
+    const btn=document.createElement('button');
+    btn.className='filter-btn'+(currentFilter===cat?' active':'');
+    btn.dataset.filter=cat;
+    btn.textContent=cat.length>15?cat.substring(0,15)+'...':cat;
+    btn.title=cat;
+    container.appendChild(btn);
+  });
+  container.querySelectorAll('.filter-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      container.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      currentFilter=btn.dataset.filter;
+      renderTable();
+    });
+  });
+}
+
+function exportCSV(){
+  const headers=['ID','Category','Task','Priority','Status','Assigned To','Effort','Description','Notes Count'];
+  const rows=projects.map(p=>[p.id,p.category,p.task,p.priority,p.status,p.assignee,p.effort,p.notes,(p.notesList||[]).length]);
+  let csv=headers.join(',')+'\n'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jfk-platform-projects.csv';a.click()
+}
 function printView(){window.print()}
+
 renderTable();
 </script>
 </body>
